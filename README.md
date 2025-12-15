@@ -1,28 +1,28 @@
-# Projet Hybrid CNN + LBP-HF (KTH-TIPS2b)
+# Hybrid CNN + LBP-HF Project (KTH-TIPS2b)
 
-Ce dépôt implémente un pipeline de classification de textures combinant un CNN (ResNet18 pré-entraîné ImageNet) et un descripteur LBP-HF (Local Binary Pattern + Fourier) évalué sur le dataset KTH-TIPS2b.
+This repository implements a texture classification pipeline combining a CNN (ResNet18 pre-trained on ImageNet) and an LBP-HF descriptor (Local Binary Pattern + Fourier) evaluated on the KTH-TIPS2b dataset.
 
-Une **version légère de démonstration** est fournie : le notebook `Demo_Classification.ipynb` se lance sans images brutes grâce au cache de features pré-extraites (`features_all.npz`).
+A **lightweight demo version** is provided: the `Demo_Classification.ipynb` notebook runs without raw images thanks to the pre-extracted features cache (`features_all.npz`).
 
-## Contenu principal
-- `Demo_Classification.ipynb` : démo légère prête à exécuter (utilise des features pré-extraits).
-- `data/features_all.npz` : cache des descripteurs fusionnés CNN+LBP-HF pour l'ensemble des images (avec métadonnées `samples`).
-- `data/sample_images/` : quelques images d'exemple pour les visualisations LBP-HF et CNN.
-- `scripts_archive/` : Scripts pipeline complet :
-  - `01_prepare_dataset_manifest.py` : prétraitement et génération de `manifest.csv`.
-  - `02_samplewise_train_test_split.py` : split par échantillon (sample_a,b,c → train, sample_d → test).
-  - `03_extract_hybrid_features.py` : extraction des features CNN+LBP-HF (split fixe).
-  - `04_loso_crossval_evaluate.py` : validation croisée LOSO et génération du cache `features_all.npz`.
+## Main Content
+- `Demo_Classification.ipynb`: lightweight demo ready to run (uses pre-extracted features).
+- `data/features_all.npz`: cache of fused CNN+LBP-HF descriptors for all images (with `samples` metadata).
+- `data/sample_images/`: some sample images for LBP-HF and CNN visualizations.
+- `scripts_archive/`: Full pipeline scripts:
+  - `01_prepare_dataset_manifest.py`: preprocessing and generation of `manifest.csv`.
+  - `02_samplewise_train_test_split.py`: split by sample (sample_a,b,c → train, sample_d → test).
+  - `03_extract_hybrid_features.py`: extraction of CNN+LBP-HF features (fixed split).
+  - `04_loso_crossval_evaluate.py`: LOSO cross-validation and generation of the `features_all.npz` cache.
 
-## Prérequis
-- Python 3.10+ recommandé
-- Installation des dépendances :
+## Prerequisites
+- Python 3.10+ recommended
+- Install dependencies:
   ```bash
   pip install -r requirements.txt
   ```
 
-## Démarrage rapide (version légère pour GitHub)
-1. Structure actuelle du projet :
+## Quick Start (Lightweight version for GitHub)
+1. Current project structure:
    ```
    projet_hybride_cnn_lbp/
    ├─ Demo_Classification.ipynb
@@ -40,58 +40,58 @@ Une **version légère de démonstration** est fournie : le notebook `Demo_Class
       ├─ 03_extract_hybrid_features.py
       └─ 04_loso_crossval_evaluate.py
    ```
-2. Ouvrir et exécuter `Demo_Classification.ipynb` :
-   - Utilise directement `data/features_all.npz` (pas besoin d'images brutes).
-   - Les sections de visualisation utilisent les PNG de `data/sample_images/`.
-   - Téléchargement automatique des poids ResNet18 ImageNet lors de la première exécution (~45 Mo).
-3. Résultats attendus (LOSO) :
-   - Accuracy moyenne ≈ 81.6% ± 2.9%
+2. Open and run `Demo_Classification.ipynb`:
+   - Uses `data/features_all.npz` directly (no need for raw images).
+   - Visualization sections use PNGs from `data/sample_images/`.
+   - Automatic download of ResNet18 ImageNet weights on first run (~45 MB).
+3. Expected results (LOSO):
+   - Average Accuracy ≈ 81.6% ± 2.9%
    - F1-weighted ≈ 80.3% ± 2.5%
 
-## Pipeline complet (si vous régénérez les données)
-1. **Prétraitement** : redimensionne en 128×128 et crée `manifest.csv`.
+## Full Pipeline (if regenerating data)
+1. **Preprocessing**: resizes to 128×128 and creates `manifest.csv`.
    ```bash
    python scripts_archive/01_prepare_dataset_manifest.py
-   # Entrée : RAW_KTHTIPS2B/<classe>/sample_a|b|c|d/*.png
-   # Sorties : data_resized/{rgb,gray}/..., manifest.csv
+   # Input: RAW_KTHTIPS2B/<class>/sample_a|b|c|d/*.png
+   # Outputs: data_resized/{rgb,gray}/..., manifest.csv
    ```
-2. **Split par échantillon** : route sample_a,b,c → train, sample_d → test.
+2. **Split by sample**: routes sample_a,b,c → train, sample_d → test.
    ```bash
    python scripts_archive/02_samplewise_train_test_split.py
-   # Entrée : manifest.csv
-   # Sortie : dataset_sample_split/{train,test}/{rgb,gray}/<classe>/...
+   # Input: manifest.csv
+   # Output: dataset_sample_split/{train,test}/{rgb,gray}/<class>/...
    ```
-3. **Extraction des descripteurs (split fixe)** : génère les NPZ train/test.
+3. **Feature Extraction (fixed split)**: generates train/test NPZ.
    ```bash
    python scripts_archive/03_extract_hybrid_features.py
-   # Entrée : dataset_sample_split/...
-   # Sorties : features_npz_sample/features_train.npz, features_test.npz
-   # Paramètre : USE_AUGMENT=True (dans le script) pour rotations/flips/contraste
+   # Input: dataset_sample_split/...
+   # Outputs: features_npz_sample/features_train.npz, features_test.npz
+   # Parameter: USE_AUGMENT=True (in the script) for rotations/flips/contrast
    ```
-4. **Validation croisée LOSO + cache global** : construit `features_all.npz` et figures.
+4. **LOSO Cross-Validation + Global Cache**: builds `features_all.npz` and figures.
    ```bash
    python scripts_archive/04_loso_crossval_evaluate.py
-   # Entrée : dataset_sample_split/...
-   # Sorties : features_npz_sample/features_all.npz, resultats/*.png, loso_scores.csv
-   # Le cache évite de recalculer les features aux exécutions suivantes.
+   # Input: dataset_sample_split/...
+   # Outputs: features_npz_sample/features_all.npz, resultats/*.png, loso_scores.csv
+   # The cache avoids recalculating features on subsequent runs.
    ```
 
-## Notes sur les fichiers
-- `data/features_all.npz` contient :
-  - `X` (9504 × 524) concaténant features CNN (512) + LBP-HF (12).
-  - `y` labels, `classes` (11 noms), `samples` (sample_a|b|c|d) alignés.
-- `features_train.npz` / `features_test.npz` sont utiles pour le split fixe mais ne contiennent pas les métadonnées `samples`.
+## Notes on files
+- `data/features_all.npz` contains:
+  - `X` (9504 × 524) concatenating CNN features (512) + LBP-HF (12).
+  - `y` labels, `classes` (11 names), `samples` (sample_a|b|c|d) aligned.
+- `features_train.npz` / `features_test.npz` are useful for the fixed split but do not contain `samples` metadata.
 
-## Données sources
-- Dataset KTH-TIPS2b attendu dans `RAW_KTHTIPS2B/` (11 classes, 4 échantillons physiques a/b/c/d par classe).
-- Les scripts ne téléchargent pas automatiquement les données brutes.
+## Source Data
+- KTH-TIPS2b dataset expected in `RAW_KTHTIPS2B/` (11 classes, 4 physical samples a/b/c/d per class).
+- Scripts do not automatically download raw data.
 
-## Résultats et visualisations
-- `resultats/` : matrices de confusion par fold, barplots accuracy/F1, `loso_scores.csv`.
-- Le notebook montre :
-  - Visualisation LBP-HF et invariance à la rotation (spectre de Fourier).
-  - Visualisation des cartes d'activation ResNet18 (sensibilité à l'orientation).
-  - Évaluation LOSO et matrice de confusion moyenne en pourcentage.
+## Results and Visualizations
+- `resultats/`: confusion matrices per fold, accuracy/F1 barplots, `loso_scores.csv`.
+- The notebook shows:
+  - LBP-HF visualization and rotation invariance (Fourier spectrum).
+  - ResNet18 activation map visualization (orientation sensitivity).
+  - LOSO evaluation and average confusion matrix in percentage.
 
-## Auteur
+## Author
 [RaoufKessouar](https://github.com/RaoufKessouar)
