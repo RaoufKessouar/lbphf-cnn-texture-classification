@@ -1,0 +1,10 @@
+*.png
+*.jpg
+RAW_KTHTIPS2B/
+dataset_sample_split/
+data_resized/
+features_npz_sample/
+
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
